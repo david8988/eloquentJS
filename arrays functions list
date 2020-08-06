@@ -110,3 +110,16 @@ function nthRecursive(list,n){
 }
 
 console.log(nthRecursive({value:5,rest:{value:"X",rest:{value:"sebas",rest:{value:false,rest:{value:"ultimo",rest:null}}}}},-1));
+
+
+function flatten(arr){
+  return arr.reduce((acum,elem)=>{    
+    if(Array.isArray(elem)){      
+      return acum.concat(elem);      
+    }else{
+      return acum.concat([elem]);
+    }
+    
+  },[]);
+}
+
