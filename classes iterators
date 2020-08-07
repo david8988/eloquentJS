@@ -49,3 +49,34 @@ for (let {x, y, value} of matrix) {
 
 
 
+
+
+// aqui un ejemplo de inheritance :
+
+class SymmetricMatrix extends Matrix {
+  constructor(size, element = (x, y) => undefined) {
+    super(size, size, (x, y) => {
+      if (x < y) return element(y, x);
+      else return element(x, y);
+    });
+  }
+  set(x, y, value) {
+    super.set(x, y, value);
+    if (x != y) {
+      super.set(y, x, value);
+    }
+  }
+}
+
+//ejemplo  de inheritance
+/*let matrix = new SymmetricMatrix(5, (x, y) => `${x},${y}`);
+console.log(matrix.get(4, 3));*/
+
+/// ejemplo de instanceof
+/*
+console.log(new SymmetricMatrix(2) instanceof SymmetricMatrix);
+console.log(new SymmetricMatrix(2) instanceof Matrix);
+console.log(new Matrix(2, 2) instanceof SymmetricMatrix);
+console.log([1] instanceof Array);
+*/
+
