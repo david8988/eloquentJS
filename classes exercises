@@ -121,3 +121,78 @@ console.log(group.has(10));
 
 //3. iterable groups
 
+
+
+class Group{
+  constructor(){
+    this.members=[];
+  }
+  add(value){
+    if(this.members.every(v=> v!==value)){
+      this.members.push(value);
+    }    
+  }
+  delete(value){
+    if(this.members.some(v=>v===value)){
+      this.members.splice(this.members.indexOf(value),1);
+    }
+  }
+  has(value){
+    if(this.members.some(v=>v===value)){
+      return true;
+    }
+    return false;
+  }
+
+  static from(iterableObject){
+    let newG= new Group();
+    iterableObject.forEach(v=>newG.add(v));
+    return newG;
+  }
+
+  [Symbol.iterator]() {
+    return new GroupIterator(this);
+  }
+
+
+}
+
+
+class GroupIterator{
+  constructor(group){
+    this.current=0;
+    this.group=group;
+  }
+  next(){
+    if(this.current===this.group.members.length) return {done:true};
+    let value={
+      current:this.current,
+      value:this.group.members[this.current]
+    }
+    this.current++;
+    return {value, done:false};
+  }
+}
+
+
+let grupo= new Group();
+grupo.add("nino");
+grupo.add("ana");
+grupo.add("pedro");
+grupo.add("miguel");
+console.log(grupo)
+for(let item of grupo){
+  console.log(item);
+}
+
+
+///////////////////
+
+4.Borrowing a method
+
+
+let map = {one: true, two: true, hasOwnProperty: true};
+
+console.log(Object.prototype.hasOwnProperty.call(map, "one"));
+
+
