@@ -110,3 +110,436 @@ runRobot(VillageState.random(), randomRobot);
 
 ///////////////////////////  AQUI escribire mi version del robot o algo parecido....
 
+const calles=["Casa de Lulo-Tienda","Casa de Lulo-Posta","Tienda-Casa de Sebas","Tienda-Casa de Moises","Casa de Sebas-Panaderia","Panaderia-Iglesia","Panaderia-Libreria","Libreria-Casa de Nayeli","Parque-Iglesia","Parque-Casa de Nayeli","Parque-Casa de Moises","Colegio-Casa de Moises","Colegio-Casa de Nayeli","Colegio-Lavanderia","Posta-Lavanderia"];
+
+
+
+function construirGrafico(limites){
+  let grafico=Object.create(null);
+
+  function agregarLimite(de,a){
+    if(grafico[de]==null){
+      grafico[de]=[a];
+    }else{
+      grafico[de].push(a);
+    }
+  }
+  
+  for(let [de,a] of limites.map(calle=>calle.split("-"))){
+     agregarLimite(de,a);
+     agregarLimite(a,de);
+  }
+  return grafico;
+}
+
+
+const graficoDeCalles=construirGrafico(calles);
+console.log(graficoDeCalles);
+
+class Vecindario{
+  constructor(lugar,paquetes){
+    this.lugar=lugar,
+    this.paquetes=paquetes
+  }
+
+  mover(destino){
+    if(!graficoDeCalles[this.lugar].includes(destino)){
+      return this;
+    }else{
+      let paquetes=this.paquetes.map(p=>{
+        if(p.lugar != this.lugar) return p;
+        return {
+          lugar: destino,
+          direccion: p.direccion
+        };
+      }).filter(p=> p.lugar != p.direccion);
+      return new Vecindario(destino,paquetes);
+    }
+  }
+}
+
+///ejemplo de la clase vecindario
+/*let primero= new Vecindario("Casa de Sebas",[{lugar:"Casa de Sebas",direccion:"Panaderia"}]);
+
+let siguiente=primero.mover("Panaderia");
+
+console.log(siguiente.lugar);
+console.log(siguiente.paquetes);
+console.log(primero.lugar);*/
+
+//********** */
+
+//abajo se programa al robot
+
+function iniciarRobot(estado,robot,memoria){
+  console.log("estado actual: ");
+  console.log(estado);
+  
+  for(let turno=0;;turno++){
+    if(estado.paquetes.length==0){
+      console.log(`Entrega completada en ${turno} turnos` );
+      break;
+    }
+    let accion=robot(estado,memoria);
+    
+    estado=estado.mover(accion.direccion);
+    
+    memoria=accion.memoria;
+
+    console.log(`se ha movido a ${accion.direccion}`);
+    console.log("nuevo estado: ");
+    console.log(estado);
+  }
+}
+
+
+
+//////** funcion que elige al azar */
+
+function elegirAlAzar(arr){
+  let eleccion=Math.floor(Math.random()*arr.length);
+  return arr[eleccion];
+}
+
+
+///*******funcion que devuelve un robot aleatorio */
+
+function robotAleatorio(estado){
+  return {direccion: elegirAlAzar(graficoDeCalles[estado.lugar])};
+}
+
+//********* abajo se agrega el metodo aleatorio a la clase Vecindario */
+
+Vecindario.aleatorio = function(contadorDePaquetes=5){
+  let paquetes=[];
+  for(let i=0;i<contadorDePaquetes;i++){
+    let direccion=elegirAlAzar(Object.keys(graficoDeCalles));
+    let lugar;
+    do{
+      lugar=elegirAlAzar(Object.keys(graficoDeCalles));
+    }while(lugar==direccion);
+    paquetes.push({lugar,direccion});
+  }
+  return new Vecindario("Casa de Sebas",paquetes);
+}
+
+///***// abajo se inicia añ robot */
+
+
+iniciarRobot(Vecindario.aleatorio(),robotAleatorio)
+
+
+
+
+
+//*////////*********************************
+
+//****************
+
+//***************
+/////////////////////////////////////////////
+////////////////
+
+//////// AQUI CONTINUA LA VERSION DEL LIBRO
+
+
+///** ruta del robot mail, todo el codigo
+
+const mailRoute = [
+"Alice's House", "Cabin", "Alice's House", "Bob's House",
+"Town Hall", "Daria's House", "Ernie's House",
+"Grete's House", "Shop", "Grete's House", "Farm",
+"Marketplace", "Post Office"
+];
+
+function buildGraph(edges) {
+  let graph = Object.create(null);
+  
+  function addEdge(from, to) {
+    if (graph[from] == null) {
+      graph[from] = [to];
+    } else {
+      graph[from].push(to);
+    }
+  }
+    
+  //console.log(edges.map(r=>r.split("-")));
+  for (let [from, to] of edges.map(r => r.split("-"))) {
+    //console.log([from, to])
+    addEdge(from, to);
+    addEdge(to, from);
+  }
+  return graph;
+}
+
+const roads = [
+"Alice's House-Bob's House", "Alice's House-Cabin",
+"Alice's House-Post Office", "Bob's House-Town Hall",
+"Daria's House-Ernie's House", "Daria's House-Town Hall",
+"Ernie's House-Grete's House", "Grete's House-Farm",
+"Grete's House-Shop", "Marketplace-Farm",
+"Marketplace-Post Office", "Marketplace-Shop",
+"Marketplace-Town Hall", "Shop-Town Hall"
+];
+
+
+const roadGraph = buildGraph(roads);
+
+//console.log(roadGraph)
+
+class VillageState {
+  constructor(place, parcels) {
+    this.place = place;
+    this.parcels = parcels;
+  }
+  move(destination) {
+    if (!roadGraph[this.place].includes(destination)) {
+      return this;
+    } else {
+        let parcels = this.parcels.map(p => {
+          if (p.place != this.place) return p;
+          return {place: destination, address: p.address};
+        }).filter(p => p.place != p.address);
+        return new VillageState(destination, parcels);
+    }
+  } 
+}
+
+/*let first = new VillageState("Post Office",[{place: "Post Office", address: "Alice's House"}]
+);
+let next = first.move("Alice's House");
+console.log(next.place);
+console.log(next.parcels);
+console.log(first.place);*/
+
+
+function runRobot(state, robot, memory=[]) { 
+  console.log("current state: ")
+  console.log(state)
+  
+  for (let turn = 0;; turn++) {
+    
+    if (state.parcels.length == 0) {
+      console.log(`Done in ${turn} turns`);
+      break;
+    }
+    
+    let action = robot(state, memory);
+    console.log(action)
+    state = state.move(action.direction);
+    memory = action.memory;
+    console.log(`Moved to ${action.direction}`);
+    console.log("new state: ")
+    console.log(state)
+  }
+}
+
+function randomPick(array) {
+  let choice = Math.floor(Math.random() * array.length);
+  return array[choice];
+}
+
+function randomRobot(state) {
+  return {direction: randomPick(roadGraph[state.place])};
+}
+
+
+VillageState.random = function(parcelCount = 5) {
+  let parcels = [];
+  for (let i = 0; i < parcelCount; i++) {
+    let address = randomPick(Object.keys(roadGraph));
+    let place;
+    do {
+      place = randomPick(Object.keys(roadGraph));
+    } while (place == address);
+    parcels.push({place, address});
+  }
+  return new VillageState("Post Office", parcels);
+};
+
+
+runRobot(VillageState.random(), routeRobot);
+
+/// robot con otra ruta : pasar 2 veces por cada lugar
+
+
+
+
+// se implementa la funcion robot con ruta
+
+function routeRobot(state,memory){
+  if(memory.length==0){
+    memory=mailRoute;
+  }
+  return {direction:memory[0],memory:memory.slice(1)};
+}
+
+
+
+//////////////////////
+///////////////
+///////////////////
+//////////////////
+///////////////////////
+/////////////////
+/////////////////////
+////////////////
+/////////////////////////// AQUI MI VERSION--- codigo completo
+
+const calles=["Casa de Lulo-Tienda","Casa de Lulo-Posta","Tienda-Casa de Sebas","Tienda-Casa de Moises","Casa de Sebas-Panaderia","Panaderia-Iglesia","Panaderia-Libreria","Libreria-Casa de Nayeli","Parque-Iglesia","Parque-Casa de Nayeli","Parque-Casa de Moises","Colegio-Casa de Moises","Colegio-Casa de Nayeli","Colegio-Lavanderia","Posta-Lavanderia"];
+
+//// array de lugares para el metodo ruta de camion
+
+const rutaDeCamion=["Panaderia","Libreria","Casa de Nayeli","Parque","Iglesia","Parque","Casa de Moises","Colegio","Lavanderia","Posta","Casa de Lulo","Tienda","Casa de Sebas"];
+
+
+function construirGrafico(limites){
+  let grafico=Object.create(null);
+
+  function agregarLimite(de,a){
+    if(grafico[de]==null){
+      grafico[de]=[a];
+    }else{
+      grafico[de].push(a);
+    }
+  }
+  
+  for(let [de,a] of limites.map(calle=>calle.split("-"))){
+     agregarLimite(de,a);
+     agregarLimite(a,de);
+  }
+  return grafico;
+}
+
+
+const graficoDeCalles=construirGrafico(calles);
+//console.log(graficoDeCalles);
+
+class Vecindario{
+  constructor(lugar,paquetes){
+    this.lugar=lugar,
+    this.paquetes=paquetes
+  }
+
+  mover(destino){    
+    
+    if(!graficoDeCalles[this.lugar].includes(destino)){
+      console.log("aqui")
+      return this;
+    }else{
+      let paquetes=this.paquetes.map(p=>{
+        if(p.lugar != this.lugar) return p;
+        return {
+          lugar: destino,
+          direccion: p.direccion
+        };
+      }).filter(p=> p.lugar != p.direccion);
+      return new Vecindario(destino,paquetes);
+    }
+  }
+}
+
+///ejemplo de la clase vecindario
+/*let primero= new Vecindario("Casa de Sebas",[{lugar:"Casa de Sebas",direccion:"Panaderia"}]);
+
+let siguiente=primero.mover("Panaderia");
+
+console.log(siguiente.lugar);
+console.log(siguiente.paquetes);
+console.log(primero.lugar);*/
+
+//********** */
+
+//abajo se programa al robot
+
+function iniciarRobot(estado,robot,memoria=[]){
+  console.log("estado actual: ");
+  console.log(estado);
+  
+  for(let turno=0;;turno++){
+    if(estado.paquetes.length==0){
+      console.log(`Entrega completada en ${turno} turnos` );
+      break;
+    }
+    let accion=robot(estado,memoria);
+    
+    estado=estado.mover(accion.direccion);
+    
+    memoria=accion.memoria;
+
+    console.log(`se ha movido a ${accion.direccion}`);
+    console.log("nuevo estado: ");
+    console.log(estado);
+  }
+}
+
+
+
+//////** funcion que elige al azar */
+
+function elegirAlAzar(arr){
+  let eleccion=Math.floor(Math.random()*arr.length);
+  return arr[eleccion];
+}
+
+
+///*******funcion que devuelve un robot aleatorio */
+
+function robotAleatorio(estado){
+  return {direccion: elegirAlAzar(graficoDeCalles[estado.lugar])};
+}
+
+//********* abajo se agrega el metodo aleatorio a la clase Vecindario */
+
+Vecindario.aleatorio = function(contadorDePaquetes=5){
+  let paquetes=[];
+  for(let i=0;i<contadorDePaquetes;i++){
+    let direccion=elegirAlAzar(Object.keys(graficoDeCalles));
+    let lugar;
+    do{
+      lugar=elegirAlAzar(Object.keys(graficoDeCalles));
+    }while(lugar==direccion);
+    paquetes.push({lugar,direccion});
+  }
+  return new Vecindario("Casa de Sebas",paquetes);
+}
+
+///***// abajo se inicia al robot con ruta aleeatoria */
+//  iniciarRobot(Vecindario.aleatorio(),robotAleatorio)
+
+
+//inicial robot con ruta del camion
+
+iniciarRobot(Vecindario.aleatorio(),robotConRuta)
+
+/// funcion para ruta del robot(robot con ruta del camion)
+
+function robotConRuta(estado,memoria){
+  if(memoria.length==0){
+    memoria=rutaDeCamion;
+  }
+  return {direccion:memoria[0],memoria:memoria.slice(1)};
+}
+
+
+//////////////////////////////////
+////////////////////////////
+////////////////////////////////
+//////////////////// AQUI CONTINUA EL LIBRO:  PATHFINDING
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
