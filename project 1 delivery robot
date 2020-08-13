@@ -688,14 +688,13 @@ function goalOrientedRobot({place, parcels}, route) {
 
 
 
-//////////////////AQUI VA MI CODIGO DE VECINDARIO
+//////////////////AQUI VA MI CODIGO DE VECINDARIO PATH FINDER
 
 
 
 
 
 /////////////////////////// AQUI MI VERSION--- codigo completo
-
 const calles=["Casa de Lulo-Tienda","Casa de Lulo-Posta","Tienda-Casa de Sebas","Tienda-Casa de Moises","Casa de Sebas-Panaderia","Panaderia-Iglesia","Panaderia-Libreria","Libreria-Casa de Nayeli","Parque-Iglesia","Parque-Casa de Nayeli","Parque-Casa de Moises","Colegio-Casa de Moises","Colegio-Casa de Nayeli","Colegio-Lavanderia","Posta-Lavanderia"];
 
 
@@ -719,7 +718,7 @@ function construirGrafico(limites){
 
 
 const graficoDeCalles=construirGrafico(calles); 
- console.log(graficoDeCalles["Casa de Sebas"]); 
+//console.log(graficoDeCalles)
 
 class Vecindario{
   constructor(lugar,paquetes){
@@ -759,7 +758,7 @@ function iniciarRobot(estado,robot,memoria=[]){
       break;
     }
     let accion=robot(estado,memoria);
-    
+    console.log(accion)
     estado=estado.mover(accion.direccion);
     
     memoria=accion.memoria;
@@ -810,21 +809,21 @@ iniciarRobot(Vecindario.aleatorio(),robotOrientadoAlObjetivo)
 /// funcion  buscar ruta 
 
 //graficoDeCalles,lugar,paquete.direccion
-function buscarRuta(grafico,lugarActual,lugarDeRecojo,lugarDeEntrega){
+function buscarRuta(grafico,lugarActual,lugarDeEntrega){
   
   let trabajo=[{en:lugarActual,ruta:[]}];
-  console.log("trabajo ", trabajo)
+ 
   for(let i=0;i<trabajo.length;i++){
-    console.log(i)
+   
     let {en,ruta}=trabajo[i];
     
     for(let lugar of grafico[en] ){     
-      console.log("interacion con lugar: ",lugar)
-      if(lugar==lugarDeEntrega && ruta.includes(lugarDeRecojo) ) return ruta.concat(lugar);
+      
+      if(lugar==lugarDeEntrega) return ruta.concat(lugar);
     
       if(!trabajo.some(w=>w.en==lugar)){
         trabajo.push({en:lugar,ruta:ruta.concat(lugar)});
-        console.log("trabajo ", trabajo)                                    
+                                          
       }
     }
   }
@@ -834,27 +833,24 @@ function buscarRuta(grafico,lugarActual,lugarDeRecojo,lugarDeEntrega){
 //// funcion del robot Orientado Al Objetivo
 
 function robotOrientadoAlObjetivo({lugar,paquetes},ruta){
-  console.log("estado:",{lugar,paquetes})
-  console.log("ruta: ",ruta)
+  
   if(ruta.length==0){
     
     let paquete=paquetes[0];
-   
+   console.log(paquete.lugar)
+   console.log(lugar)      
     if(paquete.lugar!=lugar){
      
-      ruta=buscarRuta(graficoDeCalles,lugar,paquete.lugar,paquete.direccion);
+      ruta=buscarRuta(graficoDeCalles,lugar,paquete.lugar); 
        
-    } 
-    console.log("ruta resultado de buscarRuta: ",ruta)
+    } else{
+      ruta=buscarRuta(graficoDeCalles,lugar,paquete.direccion);
+    }
+    
   }
-  console.log({direccion:ruta[0],memoria:ruta.slice(1)})
+  
   return {direccion:ruta[0],memoria:ruta.slice(1)};
 } 
-
-
-
-
-
 
 
 
